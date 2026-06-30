@@ -1,0 +1,19 @@
+# Object files and build artifacts
+objs/
+*.o
+*.out
+
+# Executables
+prog1_mandelbrot_threads/mandelbrot
+prog2_vecintrin/myexp
+prog3_mandelbrot_ispc/mandelbrot_ispc
+prog4_sqrt/sqrt
+prog5_saxpy/saxpy
+prog6_kmeans/kmeans
+
+# Output images
+*.ppm
+
+# Logs and plots
+*.log
+*.png
