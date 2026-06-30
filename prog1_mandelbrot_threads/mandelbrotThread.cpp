@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <cstdlib>
 #include <thread>
+#include <math.h>
 
 #include "CycleTimer.h"
 
@@ -13,8 +14,9 @@ typedef struct {
     int* output;
     int threadId;
     int numThreads;
+    int startRow;
+    int endRow;
 } WorkerArgs;
-
 
 extern void mandelbrotSerial(
     float x0, float y0, float x1, float y1,
@@ -36,7 +38,14 @@ void workerThreadStart(WorkerArgs * const args) {
     // program that uses two threads, thread 0 could compute the top
     // half of the image and thread 1 could compute the bottom half.
 
-    printf("Hello world from thread %d\n", args->threadId);
+    // printf("Hello world from thread %d\n", args->threadId);
+    
+    mandelbrotSerial(args->x0,args->y0,args->x1,args->y1,
+        args->width,args->height,
+        args->startRow,args->endRow - args->startRow,
+        args->maxIterations,
+        args->output);
+
 }
 
 //
@@ -76,7 +85,15 @@ void mandelbrotThread(
         args[i].maxIterations = maxIterations;
         args[i].numThreads = numThreads;
         args[i].output = output;
-      
+        // split the total img into numThreads line block.for thread i,it calculate the [i*high/numT,min((i+1)*high/numT,high)] line.
+        args[i].startRow = (int) i*height/numThreads;
+        if ((int)((i+1)*height/numThreads) <height ){
+            args[i].endRow = (int)((i+1)*height/numThreads);
+        }
+        else{
+            args[i].endRow = height;
+        }
+        
         args[i].threadId = i;
     }
 
