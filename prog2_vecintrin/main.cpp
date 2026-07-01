@@ -60,11 +60,19 @@ int main(int argc, char * argv[]) {
   float* gold = new float[N+VECTOR_WIDTH];
   initValue(values, exponents, output, gold, N);
 
-  clampedExpSerial(values, exponents, gold, N);
-  clampedExpVector(values, exponents, output, N);
+  // clampedExpSerial(values, exponents, gold, N);
+  // clampedExpVector(values, exponents, output, N);
 
-  //absSerial(values, gold, N);
-  //absVector(values, output, N);
+  absSerial(values, gold, N);
+  for(int i=0;i<N+VECTOR_WIDTH;i++){
+    printf("%f,",gold[i]);
+  }
+  printf("\n");
+  absVector(values, output, N);
+  for(int i=0;i<N+VECTOR_WIDTH;i++){
+    printf("%f,",output[i]);
+  }
+  printf("\n");
 
   printf("\e[1;31mCLAMPED EXPONENT\e[0m (required) \n");
   bool clampedCorrect = verifyResult(values, exponents, output, gold, N);
@@ -190,9 +198,15 @@ void absVector(float* values, float* output, int N) {
 
     // All ones
     maskAll = _cs149_init_ones();
+    //handle for last element not  fill full vector
+    if((N-i)<VECTOR_WIDTH){
+      for (int t=VECTOR_WIDTH-1;t>=(N-i);t--){
+        maskAll.value[t]=0;
+      }
+    }
 
     // All zeros
-    maskIsNegative = _cs149_init_ones(0);
+    maskIsNegative = _cs149_mask_not(maskAll);
 
     // Load vector of values from contiguous memory addresses
     _cs149_vload_float(x, values+i, maskAll);               // x = values[i];
