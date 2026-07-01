@@ -91,17 +91,17 @@ int main(int argc, char *argv[])
   clampedExpVector(values, exponents, output, N);
 
   // absSerial(values, gold, N);
-  for (int i = 0; i < N + VECTOR_WIDTH; i++)
-  {
-    printf("%f,", gold[i]);
-  }
-  printf("\n");
+  // for (int i = 0; i < N + VECTOR_WIDTH; i++)
+  // {
+  //   printf("%f,", gold[i]);
+  // }
+  // printf("\n");
   // absVector(values, output, N);
-  for (int i = 0; i < N + VECTOR_WIDTH; i++)
-  {
-    printf("%f,", output[i]);
-  }
-  printf("\n");
+  // for (int i = 0; i < N + VECTOR_WIDTH; i++)
+  // {
+  //   printf("%f,", output[i]);
+  // }
+  // printf("\n");
 
   printf("\e[1;31mCLAMPED EXPONENT\e[0m (required) \n");
   bool clampedCorrect = verifyResult(values, exponents, output, gold, N);
@@ -395,10 +395,41 @@ float arraySumVector(float *values, int N)
   //
   // CS149 STUDENTS TODO: Implement your vectorized version of arraySumSerial here
   //
-
-  for (int i = 0; i < N; i += VECTOR_WIDTH)
-  {
+  __cs149_vec_float sumVec=_cs149_vset_float(0);
+  __cs149_vec_float v;
+  __cs149_mask maskAvaliable;
+  if(N<4){
+    return arraySumSerial(values,N);
   }
+  else{
+    for (int i = 0; i < N; i += VECTOR_WIDTH)
+    {
+      maskAvaliable = _cs149_init_ones();
+      if ((N - i) < VECTOR_WIDTH)
+      {
+        for (int t = VECTOR_WIDTH - 1; t >= (N - i); t--)
+        {
+          maskAvaliable.value[t] = 0;
+        }
+      }
+      _cs149_vload_float(v,values+i,maskAvaliable);
+      _cs149_vadd_float(sumVec,sumVec,v,maskAvaliable);
+    }
+
+    for (int stride = VECTOR_WIDTH / 2; stride > 0; stride >>= 1) {
+    _cs149_hadd_float(sumVec, sumVec);       // 相邻 pair 相加
+    _cs149_interleave_float(sumVec, sumVec);  // 把有效和集中到前半
+    }
+    return sumVec.value[0];  // 总和在 v[0]
+
+    // float sum=0;
+    // for (int i=0;i<VECTOR_WIDTH;i++){
+    //   sum+=sumVec.value[i];
+    // }
+    // return sum;
+  }
+
+  
 
   return 0.0;
 }
